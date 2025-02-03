@@ -1,6 +1,5 @@
 #include "game.h"
 #include <iostream>
-#include <SDL2/SDL_ttf.h>
 
 SDL_Texture* loadTextureFromPath(SDL_Renderer* renderer, const char* path) {
     SDL_Surface* surface = IMG_Load(path);
@@ -83,6 +82,20 @@ bool Game::init() {
         textures[std::to_string(i)] = texture;
     }
 
+    SDL_Surface* surface = TTF_RenderText_Solid(font, "STALEMATE", textColor);
+    if (!surface) {
+        std::cerr << "Failed to render text: " << TTF_GetError() << std::endl;
+        return false;
+    }
+    
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+    if (!texture) {
+        std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
+        return false;
+    }
+    textures["stalemate"] = texture;
+
     
     // Load players
     player1 = std::make_unique<Player>(settings, 1);
@@ -108,7 +121,6 @@ Game::~Game() {
 
 void Game::run() {
     bool running = true;
-
     while (running) {
         float deltaTime = clk.delta();
 
@@ -128,18 +140,15 @@ void Game::run() {
         player1->update(deltaTime);
         player2->update(deltaTime);
 
-        // Render
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
+        // background
+        SDL_RenderCopy(renderer, textures["background"], nullptr, nullptr);
 
         player1->render(renderer, textures);
         player2->render(renderer, textures);
 
-        SDL_RenderPresent(renderer);
-
         if (!player1->hasSpaceship() && !player2->hasSpaceship()) {
-            std::cout << "Stalemate!" << std::endl;
-            running = false;
+            SDL_Rect dstRect = {settings->w / 2 - 100, settings->h / 2 - 50, 200, 100};
+            SDL_RenderCopy(renderer, textures["stalemate"], nullptr, &dstRect);
         } else if (!player1->hasSpaceship()) {
             std::cout << "Player 2 wins!" << std::endl;
             running = false;
@@ -147,6 +156,8 @@ void Game::run() {
             std::cout << "Player 1 wins!" << std::endl;
             running = false;
         }
+
+        SDL_RenderPresent(renderer);
 
         SDL_Delay(1000 / settings->fps);
     }

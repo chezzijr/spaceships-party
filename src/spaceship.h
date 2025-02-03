@@ -1,6 +1,12 @@
 #ifndef SPACESHIP_H
 #define SPACESHIP_H
+
+#ifdef _WIN32
+#include <SDL.h>
+#else
 #include <SDL2/SDL.h>
+#endif
+
 #include <memory>
 #include <cmath>
 #include <unordered_map>

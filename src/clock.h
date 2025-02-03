@@ -1,6 +1,11 @@
 #ifndef CLOCK_H
 #define CLOCK_H
+
+#ifdef _WIN32
+#include <SDL.h>
+#else
 #include <SDL2/SDL.h>
+#endif
 
 class Clock {
 private:

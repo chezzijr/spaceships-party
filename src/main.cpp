@@ -1,10 +1,3 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <vector>
-#include <cmath>
-#include <iostream>
-#include "player.h"
-#include "clock.h"
 #include "game.h"
 #include <memory>
 
