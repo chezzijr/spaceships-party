@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include "math.h"
 #include "settings.h"
+#include "weapon.h"
 
 class Spaceship {
 public:
@@ -21,6 +22,7 @@ public:
     Vector2 velocity;
     int playerNumber;
     int value;
+    Weapon weapon;
 
     float speed;  // Magnitude of velocity vector
     float angle;   // Rotation angle in degrees
@@ -42,6 +44,8 @@ public:
     void update(float deltaTime);
     void render(SDL_Renderer* renderer, std::unordered_map<std::string, SDL_Texture*> textures) const;
     void applyBoost();
+    std::shared_ptr<Projectile> fire();
+    void pickUpProjectile(ProjectileType type);
 };
 
 #endif

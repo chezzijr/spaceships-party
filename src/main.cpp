@@ -1,6 +1,5 @@
 #include "game.h"
 #include <memory>
-
 int main(int argc, char* argv[]) {
     auto settings = std::make_shared<GameSettings>(GameSettings{
         .title = "Spaceship Movement",
@@ -25,10 +24,20 @@ int main(int argc, char* argv[]) {
         },
         .numStartSpaceships = 5,
         .doublePressThreshold = 0.2f,
+        .powerupSpawnInterval = 5.0f,
+        .powerupRadius = 16.0f,
         .spaceshipSize = 32,
         .rotationSpeed = 360.0f,
         .forceBoost = 300.0f,
         .drag = 0.99f,
+        .bulletSpeed = 500.0f,
+        .bulletRadius = 8.0f,
+        .bulletLifeTime = 1.0f,
+        .laserBeamLifeTime = 0.1f,
+        .laserBeamWidth = 10.0f,
+        .mineActivationTime = 1.0f,
+        .mineActiveRadius = 100.0f,
+        .mineExplosionRadius = 200.0f,
     });
 
     Game game(settings);

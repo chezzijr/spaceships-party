@@ -14,8 +14,24 @@ Spaceship::Spaceship(int playerNumber, std::shared_ptr<GameSettings> settings, f
     angle(0.0), 
     active(false),
     readyForSameSideCollision(true),
-    readyForOppositeSideCollision(true)
-{}
+    readyForOppositeSideCollision(true),
+    weapon(Weapon(WeaponSettings{
+        .type = ProjectileType::BULLET,
+        .cooldown = 1.0f,
+        .cooldownTimer = 0.0f,
+        .maxBulletAmmo = 2,
+        .bulletAmmo = 2,
+        .bulletSpeed = settings->bulletSpeed,
+        .bulletRadius = settings->bulletRadius,
+        .bulletLifeTime = settings->bulletLifeTime,
+        .laserBeamLifeTime = settings->laserBeamLifeTime,
+        .laserBeamWidth = settings->laserBeamWidth,
+        .mineActivationTime = settings->mineActivationTime,
+        .mineActiveRadius = settings->mineActiveRadius,
+        .mineExplosionRadius = settings->mineExplosionRadius
+    }))
+{
+}
 
 float Spaceship::minX() const {
     return pos.x - gameSettings->spaceshipSize / 2;
@@ -82,6 +98,8 @@ void Spaceship::update(float deltaTime) {
     if (minY() < 0) pos.y = gameSettings->spaceshipSize / 2;
     if (maxX() >= gameSettings->w) pos.x = gameSettings->w - gameSettings->spaceshipSize / 2;
     if (maxY() >= gameSettings->h) pos.y = gameSettings->h - gameSettings->spaceshipSize / 2;
+
+    weapon.update(deltaTime);
 }
 
 void Spaceship::render(SDL_Renderer* renderer, std::unordered_map<std::string, SDL_Texture*> textures) const {
@@ -104,4 +122,12 @@ void Spaceship::applyBoost() {
     // applyingBoost = true;
     // boostEndTime = SDL_GetTicks() + duration;
     applyForce(gameSettings->forceBoost);
+}
+
+std::shared_ptr<Projectile> Spaceship::fire() {
+    return weapon.fire(pos, angle, gameSettings);
+}
+
+void Spaceship::pickUpProjectile(ProjectileType type) {
+    weapon.pickUpProjectile(type);
 }

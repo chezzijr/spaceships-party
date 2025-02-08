@@ -1,5 +1,7 @@
 #include "game.h"
 #include <iostream>
+#include <algorithm>
+#include <cstdlib>
 
 SDL_Texture* loadTextureFromPath(SDL_Renderer* renderer, const char* path) {
     SDL_Surface* surface = IMG_Load(path);
@@ -20,10 +22,13 @@ SDL_Texture* loadTextureFromPath(SDL_Renderer* renderer, const char* path) {
 }
 
 Game::Game(std::shared_ptr<GameSettings> settings) 
-    : settings(settings), window(nullptr), renderer(nullptr), player1(nullptr), player2(nullptr) {
-}
+    : settings(settings), window(nullptr), renderer(nullptr), player1(nullptr), player2(nullptr), powerupSpawnTimer(0.0f)
+{}
 
 bool Game::init() {
+    // init random seed
+    srand(time(nullptr));
+
     // Init
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "Failed to initialize SDL: " << SDL_GetError() << std::endl;
@@ -82,13 +87,40 @@ bool Game::init() {
         textures[std::to_string(i)] = texture;
     }
 
-    SDL_Surface* surface = TTF_RenderText_Solid(font, "STALEMATE", textColor);
+    // powerup textures
+    SDL_Surface* surface = TTF_RenderText_Solid(font, "/", textColor);
+    if (!surface) {
+        std::cerr << "Failed to render text: " << TTF_GetError() << std::endl;
+        return false;
+    }
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+    if (!texture) {
+        std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
+        return false;
+    }
+    textures["laser_beam"] = texture;
+
+    surface = TTF_RenderText_Solid(font, "*", textColor);
+    if (!surface) {
+        std::cerr << "Failed to render text: " << TTF_GetError() << std::endl;
+        return false;
+    }
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+    if (!texture) {
+        std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
+        return false;
+    }
+    textures["mine"] = texture;
+
+    surface = TTF_RenderText_Solid(font, "STALEMATE", textColor);
     if (!surface) {
         std::cerr << "Failed to render text: " << TTF_GetError() << std::endl;
         return false;
     }
     
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
     if (!texture) {
         std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
@@ -135,16 +167,34 @@ void Game::run() {
 
         handleAdversarialCollision();
         handleMergeCollision();
+        handlePowerupCollision();
 
         // Update game state
         player1->update(deltaTime);
         player2->update(deltaTime);
+
+        // Spawn powerups
+        powerupSpawnTimer += deltaTime;
+        if (powerupSpawnTimer >= settings->powerupSpawnInterval) {
+            powerupSpawnTimer = 0.0f;
+            float x = rand() % settings->w;
+            float y = rand() % settings->h;
+
+            // random laser beam or mine
+            ProjectileType type = rand() % 2 == 0 ? ProjectileType::LASER_BEAM : ProjectileType::MINE;
+            Powerup powerup(Vector2(x, y), 10.0f, type);
+            powerups.push_back(powerup);
+        }
 
         // background
         SDL_RenderCopy(renderer, textures["background"], nullptr, nullptr);
 
         player1->render(renderer, textures);
         player2->render(renderer, textures);
+
+        for (auto& powerup : powerups) {
+            powerup.render(renderer, textures);
+        }
 
         if (!player1->hasSpaceship() && !player2->hasSpaceship()) {
             SDL_Rect dstRect = {settings->w / 2 - 100, settings->h / 2 - 50, 200, 100};
@@ -260,4 +310,30 @@ void Game::handleMergeCollision() {
             p2s[i]->readyForSameSideCollision = true;
         }
     }
+}
+
+void Game::handlePowerupCollision() {
+    auto p1s = player1->getSpaceships();
+    auto p2s = player2->getSpaceships();
+
+    for (auto& powerup : powerups) {
+        auto powerupShape = powerup.getCollisionShape();
+        for (auto p1 : p1s) {
+            if (powerupShape.collides(p1->getCollisionShape())) {
+                powerup.acquire();
+                p1->pickUpProjectile(powerup.getType());
+            }
+        }
+
+        for (auto p2 : p2s) {
+            if (powerupShape.collides(p2->getCollisionShape())) {
+                powerup.acquire();
+                p2->pickUpProjectile(powerup.getType());
+            }
+        }
+    }
+
+    powerups.erase(std::remove_if(powerups.begin(), powerups.end(), [](const Powerup& powerup) {
+        return powerup.isAcquired();
+    }), powerups.end());
 }

@@ -49,7 +49,10 @@ void Player::handleEvent(SDL_Event& event) {
     } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDL_GetKeyFromScancode(playerSettings.shootBtn)) {
         // Shoot
         //! TODO: Implement
-        std::cout << "Player " << playerNumber << " shooting" << std::endl;
+        auto projectile = spaceships[activeSpaceship]->fire();
+        if (projectile != nullptr) {
+            projectiles.push_back(projectile);
+        }
     } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDL_GetKeyFromScancode(playerSettings.splitBtn)) {
         // Split
         splitCurrentSpaceship();
@@ -71,11 +74,24 @@ void Player::update(float deltaTime) {
     for (auto spaceship : spaceships) {
         spaceship->update(deltaTime);
     }
+
+    for (auto projectile : projectiles) {
+        projectile->update(deltaTime);
+    }
+
+    // removing projectiles that are out of life
+    projectiles.erase(std::remove_if(projectiles.begin(), projectiles.end(), [](std::shared_ptr<Projectile> projectile) {
+        return projectile->endOfLife();
+    }), projectiles.end());
 }
 
 void Player::render(SDL_Renderer* renderer, std::unordered_map<std::string, SDL_Texture*> textures) const {
     for (auto spaceship : spaceships) {
         spaceship->render(renderer, textures);
+    }
+
+    for (auto projectile : projectiles) {
+        projectile->render(renderer);
     }
 }
 
@@ -167,6 +183,7 @@ void Player::splitCurrentSpaceship() {
     newSpaceship->value = spaceship->value / 2;
     newSpaceship->readyForSameSideCollision = false;
     spaceship->value = spaceship->value - newSpaceship->value;
+    spaceship->speed = spaceship->speed + spaceship->speed / 2;
 
     spaceships.push_back(newSpaceship);
     return;

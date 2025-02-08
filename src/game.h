@@ -18,6 +18,7 @@
 #include "player.h"
 #include "spaceship.h"
 #include "settings.h"
+#include "powerup.h"
 
 class Game {
 private:
@@ -25,12 +26,15 @@ private:
     SDL_Window* window;
     SDL_Renderer* renderer;
     Clock clk;
-    // Player *player1, *player2;
     std::unique_ptr<Player> player1, player2;
     std::shared_ptr<GameSettings> settings;
 
+    std::vector<Powerup> powerups;
+    float powerupSpawnTimer;
+
     void handleAdversarialCollision();
     void handleMergeCollision();
+    void handlePowerupCollision();
 public:
     Game(std::shared_ptr<GameSettings> settings);
     ~Game();

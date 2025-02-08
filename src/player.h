@@ -9,6 +9,7 @@
 
 #include "spaceship.h"
 #include "settings.h"
+#include "projectile.h"
 #include <vector>
 #include <unordered_map>
 #include <memory>
@@ -16,6 +17,7 @@
 class Player {
 private:
     std::vector<std::shared_ptr<Spaceship>> spaceships;
+    std::vector<std::shared_ptr<Projectile>> projectiles;
     // std::vector<Bullet> bullets; // for future use, collision detection
     size_t activeSpaceship;
     PlayerSettings playerSettings;
