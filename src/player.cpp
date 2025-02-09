@@ -79,6 +79,18 @@ void Player::update(float deltaTime) {
         projectile->update(deltaTime);
     }
 
+    // removing spaceships with value <= 0 using destroySpaceship
+    std::vector<int> destroyedSpaceships;
+    for (auto spaceship : spaceships) {
+        if (spaceship->value <= 0) {
+            destroyedSpaceships.push_back(spaceship->id);
+        }
+    }
+
+    for (int id : destroyedSpaceships) {
+        destroySpaceship(id);
+    }
+
     // removing projectiles that are out of life
     projectiles.erase(std::remove_if(projectiles.begin(), projectiles.end(), [](std::shared_ptr<Projectile> projectile) {
         return projectile->endOfLife();
@@ -187,4 +199,8 @@ void Player::splitCurrentSpaceship() {
 
     spaceships.push_back(newSpaceship);
     return;
+}
+
+std::vector<std::shared_ptr<Projectile>> Player::getProjectiles() const {
+    return projectiles;
 }

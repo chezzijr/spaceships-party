@@ -22,5 +22,15 @@ const int PLAYER2_LEFT_BTN = SDL_SCANCODE_A;
 const int PLAYER2_SHOOT_BTN = SDL_SCANCODE_W;
 const int PLAYER2_SPLIT_BTN = SDL_SCANCODE_S;
 const int PLAYER2_SWITCH_BTN = SDL_SCANCODE_D;
+const float POWERUP_SPAWN_INTERVAL = 5.0f;
+const float POWERUP_RADIUS = 16.0f;
+const float BULLET_SPEED = 500.0f;
+const float BULLET_RADIUS = 8.0f;
+const float BULLET_LIFE_TIME = 1.0f;
+const float LASER_BEAM_LIFE_TIME = 0.1f;
+const float LASER_BEAM_WIDTH = 10.0f;
+const float MINE_ACTIVATION_TIME = 1.0f;
+const float MINE_ACTIVE_RADIUS = 100.0f;
+const float MINE_EXPLOSION_RADIUS = 200.0f;
 
 #endif

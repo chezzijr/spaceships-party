@@ -6,7 +6,6 @@
 #else
 #include <SDL2/SDL.h>
 #endif
-
 #include <memory>
 #include "math.h"
 
@@ -33,6 +32,7 @@ public:
     float lifeTime;
     float maxLifeTime;
     float radius;
+    bool eol;
     Bullet(Vector2 pos, float angle, float speed, float maxLifeTime, float radius);
     void update(float delta) override;
     bool isCollidingWith(const Circle& shape) const override;

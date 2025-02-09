@@ -1,7 +1,7 @@
 #include "projectile.h"
 
 Bullet::Bullet(Vector2 pos, float angle, float speed, float maxLifeTime, float radius)
-    : pos(pos), angle(angle), speed(speed), maxLifeTime(maxLifeTime), lifeTime(0), radius(radius) 
+    : pos(pos), angle(angle), speed(speed), maxLifeTime(maxLifeTime), lifeTime(0), radius(radius), eol(false)
 {}
 
 void Bullet::update(float delta) {
@@ -16,7 +16,7 @@ bool Bullet::isCollidingWith(const Circle& shape) const {
 }
 
 bool Bullet::endOfLife() const {
-    return lifeTime >= maxLifeTime;
+    return eol || lifeTime >= maxLifeTime;
 }
 
 void Bullet::render(SDL_Renderer* renderer) const {

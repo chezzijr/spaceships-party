@@ -34,6 +34,7 @@ private:
 
     void handleAdversarialCollision();
     void handleMergeCollision();
+    void handleProjectileCollision();
     void handlePowerupCollision();
 public:
     Game(std::shared_ptr<GameSettings> settings);

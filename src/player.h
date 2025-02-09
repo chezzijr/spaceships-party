@@ -33,6 +33,7 @@ public:
     void update(float deltaTime);
     void render(SDL_Renderer* renderer, std::unordered_map<std::string, SDL_Texture*> textures) const;
     std::vector<std::shared_ptr<Spaceship>> getSpaceships() const;
+    std::vector<std::shared_ptr<Projectile>> getProjectiles() const;
     void mergeSpaceships(int firstId, int secondId);
     void destroySpaceship(int id);
     bool hasSpaceship() const;
