@@ -1,6 +1,13 @@
 #include "game.h"
 #include <memory>
+#include <SDL2/SDL.h>
+
+#ifndef _WIN32
 int main(int argc, char* argv[]) {
+    #else
+#include <windows.h>
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow ) {
+#endif
     auto settings = std::make_shared<GameSettings>(GameSettings{
         .title = "Spaceship Movement",
         .x = SDL_WINDOWPOS_CENTERED,
