@@ -184,9 +184,9 @@ void Game::run() {
             float y = rand() % settings->h;
 
             // random laser beam or mine
-            // ProjectileType type = rand() % 2 == 0 ? ProjectileType::LASER_BEAM : ProjectileType::MINE;
+            ProjectileType type = rand() % 2 == 0 ? ProjectileType::LASER_BEAM : ProjectileType::MINE;
             //! TODO: update mine before enabling it
-            ProjectileType type = ProjectileType::LASER_BEAM;
+            // ProjectileType type = ProjectileType::LASER_BEAM;
             Powerup powerup(Vector2(x, y), 10.0f, type);
             powerups.push_back(powerup);
         }
@@ -237,12 +237,6 @@ void Game::handleAdversarialCollision() {
             if (p1c.collides(p2c) && p1->readyForOppositeSideCollision && p2->readyForOppositeSideCollision) {
                 p1->value--;
                 p2->value--;
-                // if (p1->value <= 0) {
-                //     player1->destroySpaceship(p1->id);
-                // }
-                // if (p2->value <= 0) {
-                //     player2->destroySpaceship(p2->id);
-                // }
                 auto diff = p1->pos - p2->pos;
                 p1->velocity = (p1->velocity + (p1->pos - p2->pos) * p1->speed).normalize();
                 p2->velocity = (p2->velocity + (p2->pos - p1->pos) * p2->speed).normalize();
@@ -332,6 +326,12 @@ void Game::handleProjectileCollision() {
                     ship->value--;
                     auto bullet = std::dynamic_pointer_cast<Bullet>(projectile);
                     bullet->eol = true;
+                } else if (projectile->getType() == ProjectileType::MINE) {
+                    auto proj = std::dynamic_pointer_cast<Mine>(projectile);
+                    // activated by the enemy
+                    if (!proj->activated) {
+                        proj->activated = true;
+                    }
                 } else {
                     ship->value = 0;
                 }
@@ -347,6 +347,12 @@ void Game::handleProjectileCollision() {
                     // invalidate the projectile
                     auto bullet = std::dynamic_pointer_cast<Bullet>(projectile);
                     bullet->eol = true;
+                } else if (projectile->getType() == ProjectileType::MINE) {
+                    auto proj = std::dynamic_pointer_cast<Mine>(projectile);
+                    // activated by the enemy
+                    if (!proj->activated) {
+                        proj->activated = true;
+                    }
                 } else {
                     ship->value = 0;
                 }
@@ -354,6 +360,19 @@ void Game::handleProjectileCollision() {
         }
     }
 
+    p1s.insert(p1s.end(), p2s.begin(), p2s.end()); // all spaceships
+    p1p.insert(p1p.end(), p2p.begin(), p2p.end()); // all projectiles
+    // mine of any player will kill all spaceships in range if exploded
+    for (auto projectile : p1p) {
+        for (auto ship : p1s) {
+            if (projectile->getType() == ProjectileType::MINE) {
+                auto proj = std::dynamic_pointer_cast<Mine>(projectile);
+                if (proj->exploding && proj->isCollidingWith(ship->getCollisionShape())) {
+                    ship->value = 0;
+                }
+            }
+        }
+    }
 }
 
 void Game::handlePowerupCollision() {

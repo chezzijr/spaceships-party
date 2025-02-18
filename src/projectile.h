@@ -57,11 +57,15 @@ public:
 class Mine : public Projectile {
 public:
     Vector2 pos;
-    float activationTime;
     bool activated;
+    bool eol;
+    bool exploding;
     float activeRadius; // If enemy is within this radius, the mine will be activated
+    float activationDuration; // Time before the mine is activated
     float explosionRadius;
-    Mine(Vector2 pos, float activationTime, float activeRadius, float explosionRadius);
+    float explosionDuration; // Duration of the explosion
+    float size;
+    Mine(Vector2 pos, float size, float activationDuration, float activeRadius, float explosionRadius, float explosionDuration);
     void update(float delta) override;
     bool isCollidingWith(const Circle& shape) const override;
     bool endOfLife() const override;

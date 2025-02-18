@@ -17,7 +17,7 @@ std::shared_ptr<Projectile> Weapon::fire(Vector2 pos, float angle, std::shared_p
             return std::make_shared<LaserBeam>(pos, angle, gameSettings->laserBeamLifeTime, gameSettings->laserBeamWidth);
         case ProjectileType::MINE:
             type = ProjectileType::BULLET;
-            return std::make_shared<Mine>(pos, gameSettings->mineActivationTime, gameSettings->mineActiveRadius, gameSettings->mineExplosionRadius);
+            return std::make_shared<Mine>(pos, gameSettings->mineSize, gameSettings->mineActivationDuration, gameSettings->mineActiveRadius, gameSettings->mineExplosionRadius, gameSettings->mineExplosionDuration);
     }
     return nullptr;
 }

@@ -26,9 +26,11 @@ Spaceship::Spaceship(int playerNumber, std::shared_ptr<GameSettings> settings, f
         .bulletLifeTime = settings->bulletLifeTime,
         .laserBeamLifeTime = settings->laserBeamLifeTime,
         .laserBeamWidth = settings->laserBeamWidth,
-        .mineActivationTime = settings->mineActivationTime,
+        .mineActivationDuration = settings->mineActivationDuration,
         .mineActiveRadius = settings->mineActiveRadius,
-        .mineExplosionRadius = settings->mineExplosionRadius
+        .mineExplosionRadius = settings->mineExplosionRadius,
+        .mineExplosionDuration = settings->mineExplosionDuration,
+        .mineSize = settings->mineSize
     }))
 {
 }

@@ -35,7 +35,9 @@ struct GameSettings {
     // projectile settings
     float bulletSpeed, bulletRadius, bulletLifeTime;
     float laserBeamLifeTime, laserBeamWidth;
-    float mineActivationTime, mineActiveRadius, mineExplosionRadius;
+    float mineActivationDuration, mineActiveRadius, mineExplosionRadius, mineExplosionDuration, mineSize;
 };
+
+
 
 #endif

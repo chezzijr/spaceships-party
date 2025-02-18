@@ -45,8 +45,10 @@ std::shared_ptr<GameSettings> GameSettings::defaultInstance() {
         .bulletLifeTime = 2.0f,
         .laserBeamLifeTime = 0.1f,
         .laserBeamWidth = 6.0f,
-        .mineActivationTime = 1.0f,
+        .mineActivationDuration = 1.0f,
         .mineActiveRadius = 100.0f,
-        .mineExplosionRadius = 200.0f,
+        .mineExplosionRadius = 150.0f,
+        .mineExplosionDuration = 0.2f,
+        .mineSize = 10.0f
     });
 }
