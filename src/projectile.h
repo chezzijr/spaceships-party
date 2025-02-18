@@ -8,6 +8,7 @@
 #endif
 #include <memory>
 #include "math.h"
+#include "settings.h"
 
 enum class ProjectileType {
     BULLET,

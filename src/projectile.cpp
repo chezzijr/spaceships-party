@@ -1,4 +1,5 @@
 #include "projectile.h"
+#include <algorithm>
 
 Bullet::Bullet(Vector2 pos, float angle, float speed, float maxLifeTime, float radius)
     : pos(pos), angle(angle), speed(speed), maxLifeTime(maxLifeTime), lifeTime(0), radius(radius), eol(false)
@@ -8,6 +9,17 @@ void Bullet::update(float delta) {
     pos.x += speed * cos(angle * M_PI / 180) * delta;
     pos.y += speed * sin(angle * M_PI / 180) * delta;
     lifeTime += delta;
+
+    auto gameSettings = GameSettings::get();
+    if (pos.x < radius / 2 || pos.x > gameSettings->w - radius / 2) {
+        angle = 180 - angle;
+    }
+    if (pos.y < radius / 2 || pos.y > gameSettings->h - radius / 2) {
+        angle = -angle;
+    }
+    // clamp the position to the screen
+    pos.x = std::clamp(pos.x, radius / 2, gameSettings->w - radius / 2);
+    pos.y = std::clamp(pos.y, radius / 2, gameSettings->h - radius / 2);
 }
 
 bool Bullet::isCollidingWith(const Circle& shape) const {
@@ -53,7 +65,11 @@ bool LaserBeam::endOfLife() const {
 void LaserBeam::render(SDL_Renderer* renderer) const {
     // draw a line with pos as the start point and angle as the angle
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderDrawLine(renderer, pos.x, pos.y, pos.x + 2000 * cos(angle * M_PI / 180), pos.y + 2000 * sin(angle * M_PI / 180));
+    for (int dx = -width / 2; dx <= width / 2; dx++) {
+        for (int dy = -width / 2; dy <= width / 2; dy++) {
+            SDL_RenderDrawLine(renderer, pos.x + dx, pos.y + dy, pos.x + 2000 * cos(angle * M_PI / 180) + dx, pos.y + 2000 * sin(angle * M_PI / 180) + dy);
+        }
+    }
 }
 
 ProjectileType LaserBeam::getType() const {
