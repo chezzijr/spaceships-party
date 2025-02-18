@@ -19,6 +19,7 @@ OUTPUT = $(OBJ_DIR)/$(OBJ_NAME)
 
 #This is the target that compiles our executable
 all:
+	if [ ! -d $(OBJ_DIR) ]; then mkdir $(OBJ_DIR); fi
 	$(CC) -g $(shell find ./src -type f -iregex ".*\.cpp") -o $(OUTPUT) $(COMPILER_FLAGS) $(LINKER_FLAGS)
 run:
 	./dist/$(OBJ_NAME)
