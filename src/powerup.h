@@ -1,11 +1,7 @@
 #ifndef POWERUP_H
 #define POWERUP_H
 
-#ifdef _WIN32
-#include <SDL.h>
-#else
 #include <SDL2/SDL.h>
-#endif
 
 #include "math.h"
 #include "projectile.h"

@@ -1,6 +1,13 @@
 #include "game.h"
 #include <memory>
-int main(int argc, char* argv[]) {
+
+#ifndef _WIN32
+int main(int argc, char* argv[])
+#else
+#include <windows.h>
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
+#endif
+{
     auto settings = GameSettings::get();
 
     Game game(settings);

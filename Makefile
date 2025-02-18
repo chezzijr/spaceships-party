@@ -12,7 +12,6 @@ COMPILER_FLAGS = -w $(foreach d, $(INCLUDE_PATHS), -I$d)
 # link against the SDL2 library and the SDL2_image library, libjxl
 LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf
 
-LIBJXL = /usr/lib/libjxl.so.0.10.3
 #OBJ_NAME specifies the name of our executable
 OBJ_NAME = game
 OBJ_DIR = ./dist
