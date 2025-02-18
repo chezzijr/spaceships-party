@@ -1,11 +1,7 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#ifdef _WIN32
-#include <SDL.h>
-#else
 #include <SDL2/SDL.h>
-#endif
 #include <memory>
 
 struct PlayerSettings {
