@@ -1,11 +1,22 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#ifdef _WIN32
+#include <SDL.h>
+#else
+#include <SDL2/SDL.h>
+#endif
+#include <memory>
+
 struct PlayerSettings {
     SDL_Scancode leftBtn, shootBtn, splitBtn, switchBtn;
 };
 
 struct GameSettings {
+    static std::shared_ptr<GameSettings> instance;
+    static std::shared_ptr<GameSettings> get();
+    static std::shared_ptr<GameSettings> defaultInstance();
+
     const char* title;
     int x, y, w, h;
     int fps;
@@ -23,7 +34,7 @@ struct GameSettings {
 
     // spaceship settings
     int spaceshipSize;
-    float rotationSpeed, forceBoost, drag;
+    float rotationSpeed, forceBoost, drag, rotBoostDeg;
 
     // projectile settings
     float bulletSpeed, bulletRadius, bulletLifeTime;

@@ -88,7 +88,8 @@ bool Game::init() {
     }
 
     // powerup textures
-    SDL_Surface* surface = TTF_RenderText_Solid(font, "/", textColor);
+    SDL_Color laserColor = {0, 0, 255};
+    SDL_Surface* surface = TTF_RenderText_Solid(font, "/", laserColor);
     if (!surface) {
         std::cerr << "Failed to render text: " << TTF_GetError() << std::endl;
         return false;
@@ -114,19 +115,20 @@ bool Game::init() {
     }
     textures["mine"] = texture;
 
-    surface = TTF_RenderText_Solid(font, "STALEMATE", textColor);
-    if (!surface) {
-        std::cerr << "Failed to render text: " << TTF_GetError() << std::endl;
-        return false;
+    for (std::string status : {"stalemate", "player 1 win", "player 2 win"}) {
+        surface = TTF_RenderText_Solid(font, status.c_str(), textColor);
+        if (!surface) {
+            std::cerr << "Failed to render text: " << TTF_GetError() << std::endl;
+            return false;
+        }
+        texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_FreeSurface(surface);
+        if (!texture) {
+            std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
+            return false;
+        }
+        textures[status] = texture;
     }
-    
-    texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);
-    if (!texture) {
-        std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
-        return false;
-    }
-    textures["stalemate"] = texture;
 
     
     // Load players
@@ -203,11 +205,11 @@ void Game::run() {
             SDL_Rect dstRect = {settings->w / 2 - 100, settings->h / 2 - 50, 200, 100};
             SDL_RenderCopy(renderer, textures["stalemate"], nullptr, &dstRect);
         } else if (!player1->hasSpaceship()) {
-            std::cout << "Player 2 wins!" << std::endl;
-            running = false;
+            SDL_Rect dstRect = {settings->w / 2 - 100, settings->h / 2 - 50, 200, 100};
+            SDL_RenderCopy(renderer, textures["player 2 win"], nullptr, &dstRect);
         } else if (!player2->hasSpaceship()) {
-            std::cout << "Player 1 wins!" << std::endl;
-            running = false;
+            SDL_Rect dstRect = {settings->w / 2 - 100, settings->h / 2 - 50, 200, 100};
+            SDL_RenderCopy(renderer, textures["player 1 win"], nullptr, &dstRect);
         }
 
         SDL_RenderPresent(renderer);

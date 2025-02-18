@@ -31,7 +31,7 @@ void Player::handleEvent(SDL_Event& event) {
 
             if (leftPressCount == 2) {
                 // Double press: Turn 90 degrees left and apply boost
-                spaceships[activeSpaceship]->rotate(-90.0f);
+                spaceships[activeSpaceship]->rotate(gameSettings->rotBoostDeg);
                 spaceships[activeSpaceship]->applyBoost(); // Boost for 100 ms
                 leftPressCount = 0; // Reset press count
             }
@@ -42,7 +42,7 @@ void Player::handleEvent(SDL_Event& event) {
 
         if (leftPressCount == 2) {
             // Double press: Turn 90 degrees left and apply boost
-            spaceships[activeSpaceship]->rotate(-90.0f);
+            spaceships[activeSpaceship]->rotate(gameSettings->rotBoostDeg);
             spaceships[activeSpaceship]->applyBoost(); // Boost for 100 ms
             leftPressCount = 0; // Reset press count
         }
