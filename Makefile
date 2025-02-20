@@ -1,4 +1,4 @@
-.SILENT: all run
+.SILENT: all run zip
 
 #CC specifies which compiler we're using
 CC = g++
@@ -22,4 +22,12 @@ all:
 	if [ ! -d $(OBJ_DIR) ]; then mkdir $(OBJ_DIR); fi
 	$(CC) -g $(shell find ./src -type f -iregex ".*\.cpp") -o $(OUTPUT) $(COMPILER_FLAGS) $(LINKER_FLAGS)
 run:
-	./dist/$(OBJ_NAME)
+	$(OUTPUT)
+
+# prepare windows build
+# build into a single executable
+# then zip it with all the necessary dlls and assets
+# assets are in assets/ folder
+zip:
+	if [ ! -f $(OUTPUT).exe ]; then echo "Building binary" && make all; fi
+	ldd $(OUTPUT) | grep /mingw64 | awk '{print $$3}' | zip $(OBJ_DIR)/$(OBJ_NAME).zip -j -@ $(OUTPUT).exe && zip $(OBJ_DIR)/$(OBJ_NAME).zip -r assets/
