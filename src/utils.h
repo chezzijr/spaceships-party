@@ -5,6 +5,7 @@
 #include "math.h"
 
 void drawCircle(SDL_Renderer* renderer, const Circle& circle);
+void drawCircleRing(SDL_Renderer* renderer, const Circle& circle, int width);
 
 enum class BorderSide {
     LEFT = 1,
