@@ -10,6 +10,7 @@
 #include <memory>
 #include "clock.h"
 #include "player.h"
+#include "ai.h"
 #include "spaceship.h"
 #include "settings.h"
 #include "powerup.h"
@@ -20,7 +21,7 @@ private:
     SDL_Window* window;
     SDL_Renderer* renderer;
     Clock clk;
-    std::unique_ptr<Player> player1, player2;
+    std::unique_ptr<Agent> player1, player2;
     std::shared_ptr<GameSettings> settings;
 
     std::vector<Powerup> powerups;

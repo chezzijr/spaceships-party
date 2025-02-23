@@ -15,6 +15,28 @@ Player::Player(std::shared_ptr<GameSettings> gameSettings, int playerNumber)
     spaceships[activeSpaceship]->toggleActive();
 }
 
+void Player::rotate(int deltaTime) {
+    spaceships[activeSpaceship]->rotate(deltaTime);
+}
+
+void Player::rotateAndBoost() {
+    spaceships[activeSpaceship]->rotate(gameSettings->rotBoostDeg);
+    spaceships[activeSpaceship]->applyBoost(); // Boost for 100 ms
+}
+
+void Player::shoot() {
+    auto projectile = spaceships[activeSpaceship]->fire();
+    if (projectile != nullptr) {
+        projectiles.push_back(projectile);
+    }
+}
+
+void Player::switchActiveSpaceship() {
+    spaceships[activeSpaceship]->toggleActive();
+    activeSpaceship = (activeSpaceship + 1) % spaceships.size();
+    spaceships[activeSpaceship]->toggleActive();
+}
+
 void Player::handleEvent(SDL_Event& event) {
     SDL_Keycode leftKey = SDL_GetKeyFromScancode(playerSettings.leftBtn);
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == leftKey) {
@@ -31,8 +53,7 @@ void Player::handleEvent(SDL_Event& event) {
 
             if (leftPressCount == 2) {
                 // Double press: Turn 90 degrees left and apply boost
-                spaceships[activeSpaceship]->rotate(gameSettings->rotBoostDeg);
-                spaceships[activeSpaceship]->applyBoost(); // Boost for 100 ms
+                rotateAndBoost();
                 leftPressCount = 0; // Reset press count
             }
         }
@@ -42,25 +63,19 @@ void Player::handleEvent(SDL_Event& event) {
 
         if (leftPressCount == 2) {
             // Double press: Turn 90 degrees left and apply boost
-            spaceships[activeSpaceship]->rotate(gameSettings->rotBoostDeg);
-            spaceships[activeSpaceship]->applyBoost(); // Boost for 100 ms
+            rotateAndBoost();
             leftPressCount = 0; // Reset press count
         }
     } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDL_GetKeyFromScancode(playerSettings.shootBtn)) {
         // Shoot
         //! TODO: Implement
-        auto projectile = spaceships[activeSpaceship]->fire();
-        if (projectile != nullptr) {
-            projectiles.push_back(projectile);
-        }
+        shoot();
     } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDL_GetKeyFromScancode(playerSettings.splitBtn)) {
         // Split
         splitCurrentSpaceship();
     } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDL_GetKeyFromScancode(playerSettings.switchBtn)) {
         // Switch active spaceship
-        spaceships[activeSpaceship]->toggleActive();
-        activeSpaceship = (activeSpaceship + 1) % spaceships.size();
-        spaceships[activeSpaceship]->toggleActive();
+        switchActiveSpaceship();
     }
 }
 

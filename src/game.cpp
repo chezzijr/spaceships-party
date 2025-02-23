@@ -133,7 +133,7 @@ bool Game::init() {
     
     // Load players
     player1 = std::make_unique<Player>(settings, 1);
-    player2 = std::make_unique<Player>(settings, 2);
+    player2 = std::make_unique<AI>(settings, 2);
 
     return true;
 }
