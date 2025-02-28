@@ -27,7 +27,7 @@ public:
     bool readyForOppositeSideCollision; // Used to prevent multiple collisions
     std::shared_ptr<GameSettings> gameSettings;
 
-    Spaceship(int playerNumber, std::shared_ptr<GameSettings> settings, float startX, float startY);
+    Spaceship(int playerNumber, float startX, float startY);
     float minX() const;
     float minY() const;
     float maxX() const;
@@ -38,7 +38,7 @@ public:
     void rotate(float degrees);
     void applyForce(float magnitude);
     void update(float deltaTime);
-    void render(SDL_Renderer* renderer, std::unordered_map<std::string, SDL_Texture*> textures) const;
+    void render(SDL_Renderer* renderer) const;
     void applyBoost();
     std::shared_ptr<Projectile> fire();
     void pickUpProjectile(ProjectileType type);

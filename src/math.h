@@ -22,6 +22,7 @@ struct Vector2 {
 
     float dot(const Vector2& other) const;
     float distance(const Vector2& other) const;
+    float angleBetween(const Vector2& other) const;
 };
 
 struct Circle {

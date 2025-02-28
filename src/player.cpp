@@ -2,21 +2,25 @@
 #include <iostream>
 #include <algorithm>
 
-Player::Player(std::shared_ptr<GameSettings> gameSettings, int playerNumber)
-    : gameSettings(gameSettings), playerNumber(playerNumber), activeSpaceship(0), lastLeftPressTime(0.0), leftPressCount(0), leftHolding(false)
+Player::Player(int playerNumber)
+    : gameSettings(GameSettings::get()), playerNumber(playerNumber), activeSpaceship(0), lastLeftPressTime(0.0), leftPressCount(0), leftHolding(false)
 {
 
     playerSettings = gameSettings->playerSettings[playerNumber - 1];
     float spawnX = (playerNumber == 1) ? gameSettings->w / 8 : 7 * gameSettings->w / 8;
     for (int i = 1; i <= gameSettings->numStartSpaceships; i++) {
         float spawnY = gameSettings->h / (gameSettings->numStartSpaceships + 1) * i;
-        spaceships.push_back(std::make_shared<Spaceship>(playerNumber, gameSettings, spawnX, spawnY));
+        spaceships.push_back(std::make_shared<Spaceship>(playerNumber, spawnX, spawnY));
     }
     spaceships[activeSpaceship]->toggleActive();
 }
 
-void Player::rotate(int deltaTime) {
-    spaceships[activeSpaceship]->rotate(deltaTime);
+int Player::pNumber() {
+    return playerNumber;
+}
+
+void Player::rotate(float deltaTime) {
+    spaceships[activeSpaceship]->rotate(deltaTime * gameSettings->rotationSpeed);
 }
 
 void Player::rotateAndBoost() {
@@ -112,9 +116,9 @@ void Player::update(float deltaTime) {
     }), projectiles.end());
 }
 
-void Player::render(SDL_Renderer* renderer, std::unordered_map<std::string, SDL_Texture*> textures) const {
+void Player::render(SDL_Renderer* renderer) const {
     for (auto spaceship : spaceships) {
-        spaceship->render(renderer, textures);
+        spaceship->render(renderer);
     }
 
     for (auto projectile : projectiles) {
@@ -148,7 +152,7 @@ void Player::mergeSpaceships(int firstId, int secondId) {
         return;
     }
 
-    std::shared_ptr<Spaceship> newSpaceship = std::make_shared<Spaceship>(playerNumber, gameSettings, (first->pos.x + second->pos.x) / 2, (first->pos.y + second->pos.y) / 2);
+    std::shared_ptr<Spaceship> newSpaceship = std::make_shared<Spaceship>(playerNumber, (first->pos.x + second->pos.x) / 2, (first->pos.y + second->pos.y) / 2);
     newSpaceship->velocity = (first->velocity * first->speed + second->velocity * second->speed).normalize();
     newSpaceship->speed = (first->speed + second->speed) / 2;
     newSpaceship->angle = abs(first->angle - second->angle) / 2;
@@ -203,14 +207,14 @@ void Player::splitCurrentSpaceship() {
     if (spaceship->value < 2) {
         return;
     }
-    auto newSpaceship = std::make_shared<Spaceship>(playerNumber, gameSettings, spaceship->pos.x, spaceship->pos.y);
+    auto newSpaceship = std::make_shared<Spaceship>(playerNumber, spaceship->pos.x, spaceship->pos.y);
     newSpaceship->velocity = Vector2(0.0, 0.0) - spaceship->velocity;
     newSpaceship->speed = spaceship->speed / 2;
     newSpaceship->angle = -spaceship->angle;
     newSpaceship->value = spaceship->value / 2;
     newSpaceship->readyForSameSideCollision = false;
     spaceship->value = spaceship->value - newSpaceship->value;
-    spaceship->speed = spaceship->speed + spaceship->speed / 2;
+    spaceship->speed = (spaceship->speed + spaceship->speed / 2) * 2;
 
     spaceships.push_back(newSpaceship);
     return;

@@ -10,7 +10,7 @@ COMPILER_FLAGS = -w $(foreach d, $(INCLUDE_PATHS), -I$d)
 
 #LINKER_FLAGS specifies the libraries we're linking against
 # link against the SDL2 library and the SDL2_image library, libjxl
-LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf
+LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
 
 #OBJ_NAME specifies the name of our executable
 OBJ_NAME = game

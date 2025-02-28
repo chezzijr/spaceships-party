@@ -8,9 +8,8 @@ int main(int argc, char* argv[])
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
 #endif
 {
-    auto settings = GameSettings::get();
-
-    Game game(settings);
+    GameSettings::init("config.json");
+    Game game;
     if (!game.init()) {
         return -1;
     }

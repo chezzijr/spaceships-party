@@ -2,27 +2,11 @@
 #include <iostream>
 #include <algorithm>
 #include <cstdlib>
+#include "utils.h"
 
-SDL_Texture* loadTextureFromPath(SDL_Renderer* renderer, const char* path) {
-    SDL_Surface* surface = IMG_Load(path);
-    if (!surface) {
-        std::cerr << "Failed to load image: " << IMG_GetError() << std::endl;
-        return nullptr;
-    }
 
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    if (!texture) {
-        std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
-        SDL_FreeSurface(surface);
-        return nullptr;
-    }
-
-    SDL_FreeSurface(surface);
-    return texture;
-}
-
-Game::Game(std::shared_ptr<GameSettings> settings) 
-    : settings(settings), window(nullptr), renderer(nullptr), player1(nullptr), player2(nullptr), powerupSpawnTimer(0.0f)
+Game::Game() 
+    : settings(GameSettings::get()), window(nullptr), renderer(nullptr), player1(nullptr), player2(nullptr), powerupSpawnTimer(0.0f)
 {}
 
 bool Game::init() {
@@ -30,7 +14,7 @@ bool Game::init() {
     srand(time(nullptr));
 
     // Init
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         std::cerr << "Failed to initialize SDL: " << SDL_GetError() << std::endl;
         return false;
     }
@@ -40,12 +24,17 @@ bool Game::init() {
         return false;
     }
 
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        std::cerr << "Failed to initialize SDL_mixer: " << Mix_GetError() << std::endl;
+        return false;
+    }
+
     if (TTF_Init() < 0) {
         std::cerr << "Failed to initialize SDL_ttf: " << TTF_GetError() << std::endl;
         return false;
     }
 
-    window = SDL_CreateWindow(settings->title, settings->x, settings->y, settings->w, settings->h, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow(settings->title.c_str(), settings->x, settings->y, settings->w, settings->h, SDL_WINDOW_SHOWN);
     if (!window) {
         std::cerr << "Failed to create window: " << SDL_GetError() << std::endl;
         return false;
@@ -57,23 +46,27 @@ bool Game::init() {
         return false;
     }
 
+    // initialize sdl settings
+    SDL_Settings* sdlSettings = new SDL_Settings();
+
     // Load textures
-    SDL_Texture* background = loadTextureFromPath(renderer, settings->backgroundImage);
-    if (!background) {
+    sdlSettings->background = IMG_LoadTexture(renderer, settings->backgroundImage.c_str());
+    if (sdlSettings->background == nullptr) {
+        std::cerr << "Failed to load background image: " << IMG_GetError() << std::endl;
         return false;
     }
-    textures["background"] = background;
 
-    TTF_Font* font = TTF_OpenFont("assets/font.ttf", 24);
-    if (!font) {
+    sdlSettings->font = TTF_OpenFont("assets/font.ttf", 24);
+    if (sdlSettings->font == nullptr) {
         std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
         return false;
     }
+
     SDL_Color textColor = {255, 255, 255};
     SDL_Color selectedTextColor = {0, 255, 0};
     for (int i = 1; i <= 9; i++) {
         const char* text = std::to_string(i).c_str();
-        SDL_Surface* surface = TTF_RenderText_Solid(font, text, textColor);
+        SDL_Surface* surface = TTF_RenderText_Solid(sdlSettings->font, text, textColor);
         if (!surface) {
             std::cerr << "Failed to render text: " << TTF_GetError() << std::endl;
             return false;
@@ -88,52 +81,24 @@ bool Game::init() {
     }
 
     // powerup textures
-    SDL_Color laserColor = {0, 0, 255};
-    SDL_Surface* surface = TTF_RenderText_Solid(font, "/", laserColor);
-    if (!surface) {
-        std::cerr << "Failed to render text: " << TTF_GetError() << std::endl;
+    sdlSettings->laserPowerup = renderTextAsTexture(renderer, sdlSettings->font, "/", SDL_Color{0, 0, 255});
+    sdlSettings->minePowerup = renderTextAsTexture(renderer, sdlSettings->font, "*", SDL_Color{255, 0, 0});
+    if (sdlSettings->laserPowerup == nullptr || sdlSettings->minePowerup == nullptr) {
         return false;
-    }
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);
-    if (!texture) {
-        std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
-        return false;
-    }
-    textures["laser_beam"] = texture;
-
-    surface = TTF_RenderText_Solid(font, "*", textColor);
-    if (!surface) {
-        std::cerr << "Failed to render text: " << TTF_GetError() << std::endl;
-        return false;
-    }
-    texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);
-    if (!texture) {
-        std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
-        return false;
-    }
-    textures["mine"] = texture;
-
-    for (std::string status : {"stalemate", "player 1 win", "player 2 win"}) {
-        surface = TTF_RenderText_Solid(font, status.c_str(), textColor);
-        if (!surface) {
-            std::cerr << "Failed to render text: " << TTF_GetError() << std::endl;
-            return false;
-        }
-        texture = SDL_CreateTextureFromSurface(renderer, surface);
-        SDL_FreeSurface(surface);
-        if (!texture) {
-            std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
-            return false;
-        }
-        textures[status] = texture;
     }
 
+    sdlSettings->stalemateText = renderTextAsTexture(renderer, sdlSettings->font, "Stalemate", textColor);
+    sdlSettings->player1WinText = renderTextAsTexture(renderer, sdlSettings->font, "Player 1 Win", textColor);
+    sdlSettings->player2WinText = renderTextAsTexture(renderer, sdlSettings->font, "Player 2 Win", textColor);
+    if (sdlSettings->stalemateText == nullptr || sdlSettings->player1WinText == nullptr || sdlSettings->player2WinText == nullptr) {
+        return false;
+    }
+
+    settings->sdlSettings = sdlSettings;
     
     // Load players
-    player1 = std::make_unique<Player>(settings, 1);
-    player2 = std::make_unique<AI>(settings, 2);
+    player1 = std::make_shared<Player>(1);
+    player2 = std::make_shared<AI>(2, this);
 
     return true;
 }
@@ -153,6 +118,14 @@ Game::~Game() {
     SDL_Quit();
 }
 
+std::shared_ptr<Agent> Game::getPlayer1() {
+    return player1;
+}
+
+std::shared_ptr<Agent> Game::getPlayer2() {
+    return player2;
+}
+
 void Game::run() {
     bool running = true;
     while (running) {
@@ -163,8 +136,10 @@ void Game::run() {
             if (event.type == SDL_QUIT) {
                 running = false;
             }
-            player1->handleEvent(event);
-            player2->handleEvent(event);
+            if (player1->hasSpaceship() && player2->hasSpaceship()) {
+                player1->handleEvent(event);
+                player2->handleEvent(event);
+            }
         }
 
         handleProjectileCollision();
@@ -192,24 +167,24 @@ void Game::run() {
         }
 
         // background
-        SDL_RenderCopy(renderer, textures["background"], nullptr, nullptr);
+        SDL_RenderCopy(renderer, settings->sdlSettings->background, nullptr, nullptr);
 
-        player1->render(renderer, textures);
-        player2->render(renderer, textures);
+        player1->render(renderer);
+        player2->render(renderer);
 
         for (auto& powerup : powerups) {
-            powerup.render(renderer, textures);
+            powerup.render(renderer);
         }
 
         if (!player1->hasSpaceship() && !player2->hasSpaceship()) {
             SDL_Rect dstRect = {settings->w / 2 - 100, settings->h / 2 - 50, 200, 100};
-            SDL_RenderCopy(renderer, textures["stalemate"], nullptr, &dstRect);
+            SDL_RenderCopy(renderer, settings->sdlSettings->stalemateText, nullptr, &dstRect);
         } else if (!player1->hasSpaceship()) {
             SDL_Rect dstRect = {settings->w / 2 - 100, settings->h / 2 - 50, 200, 100};
-            SDL_RenderCopy(renderer, textures["player 2 win"], nullptr, &dstRect);
+            SDL_RenderCopy(renderer, settings->sdlSettings->player2WinText, nullptr, &dstRect);
         } else if (!player2->hasSpaceship()) {
             SDL_Rect dstRect = {settings->w / 2 - 100, settings->h / 2 - 50, 200, 100};
-            SDL_RenderCopy(renderer, textures["player 1 win"], nullptr, &dstRect);
+            SDL_RenderCopy(renderer, settings->sdlSettings->player1WinText, nullptr, &dstRect);
         }
 
         SDL_RenderPresent(renderer);

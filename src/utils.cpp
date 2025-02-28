@@ -55,3 +55,18 @@ RayIntersection getRayIntersectionBorder(const Vector2& pos, float angle, int SC
 
     return { side, intersectionPoint };
 }
+
+SDL_Texture* renderTextAsTexture(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Color color) {
+    SDL_Surface* surface = TTF_RenderText_Solid(font, text, color);
+    if (surface == nullptr) {
+        return nullptr;
+    }
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+    if (texture == nullptr) {
+        return nullptr;
+    }
+
+    return texture;
+}

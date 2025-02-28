@@ -20,7 +20,7 @@ public:
     ProjectileType getType() const;
     bool isAcquired() const;
     void acquire();
-    void render(SDL_Renderer* renderer, std::unordered_map<std::string, SDL_Texture*> textures) const;
+    void render(SDL_Renderer* renderer) const;
 };
 
 #endif

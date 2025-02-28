@@ -1,7 +1,7 @@
 #include "weapon.h"
 
-Weapon::Weapon(WeaponSettings settings)
-    : WeaponSettings(settings)
+Weapon::Weapon(ProjectileType type, float cooldown, float cooldownTimer, int maxBulletAmmo, int bulletAmmo)
+    : type(type), cooldown(cooldown), cooldownTimer(cooldownTimer), maxBulletAmmo(maxBulletAmmo), bulletAmmo(bulletAmmo)
 {}
 
 std::shared_ptr<Projectile> Weapon::fire(Vector2 pos, float angle, std::shared_ptr<GameSettings> gameSettings) {

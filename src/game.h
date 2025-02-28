@@ -4,7 +4,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-
+#include <SDL2/SDL_mixer.h>
 #include <unordered_map>
 #include <string>
 #include <memory>
@@ -21,7 +21,7 @@ private:
     SDL_Window* window;
     SDL_Renderer* renderer;
     Clock clk;
-    std::unique_ptr<Agent> player1, player2;
+    std::shared_ptr<Agent> player1, player2;
     std::shared_ptr<GameSettings> settings;
 
     std::vector<Powerup> powerups;
@@ -32,8 +32,10 @@ private:
     void handleProjectileCollision();
     void handlePowerupCollision();
 public:
-    Game(std::shared_ptr<GameSettings> settings);
+    Game();
     ~Game();
+    std::shared_ptr<Agent> getPlayer1();
+    std::shared_ptr<Agent> getPlayer2();
     bool init();
     void run();
 };

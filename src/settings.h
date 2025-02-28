@@ -2,21 +2,55 @@
 #define SETTINGS_H
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 #include <memory>
+#include <string>
 
 struct PlayerSettings {
     SDL_Scancode leftBtn, shootBtn, splitBtn, switchBtn;
 };
 
+enum class ProjectileType {
+    BULLET,
+    LASER_BEAM,
+    MINE
+};
+
+struct WeaponSettings {
+    float bulletSpeed, bulletRadius, bulletLifeTime;
+    float laserBeamLifeTime, laserBeamWidth;
+    float mineActivationDuration, mineActiveRadius, mineExplosionRadius, mineExplosionDuration, mineSize;
+
+};
+
+struct SDL_Settings {
+    SDL_Texture* background;
+    SDL_Texture* player1WinText;
+    SDL_Texture* player2WinText;
+    SDL_Texture* stalemateText;
+    TTF_Font* font;
+    Mix_Chunk* bulletSound;
+    Mix_Chunk* laserSound;
+    SDL_Texture* laserPowerup;
+    Mix_Chunk* mineSound;
+    SDL_Texture* minePowerup;
+
+    ~SDL_Settings();
+};
 struct GameSettings {
+    // singleton pattern
     static std::shared_ptr<GameSettings> instance;
     static std::shared_ptr<GameSettings> get();
+    static void init(const char* filename);
     static std::shared_ptr<GameSettings> defaultInstance();
 
-    const char* title;
+    std::string title;
     int x, y, w, h;
     int fps;
-    const char* backgroundImage;
+    std::string backgroundImage;
+    std::string laserBeamSound;
 
     // PlayerSettings player1;
     // PlayerSettings player2;
@@ -36,6 +70,10 @@ struct GameSettings {
     float bulletSpeed, bulletRadius, bulletLifeTime;
     float laserBeamLifeTime, laserBeamWidth;
     float mineActivationDuration, mineActiveRadius, mineExplosionRadius, mineExplosionDuration, mineSize;
+    SDL_Settings* sdlSettings;
+    // WeaponSettings* weaponSettings;
+
+    ~GameSettings();
 };
 
 

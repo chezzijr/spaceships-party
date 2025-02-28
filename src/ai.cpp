@@ -1,27 +1,46 @@
 #include "ai.h"
+#include <algorithm>
+#include <memory>
+#include <iostream>
 
-AI::AI(std::shared_ptr<GameSettings> gameSettings, int playerNumber)
-    : Player(gameSettings, playerNumber)
+const float REACTION_TIME = 0.5f;
+
+AI::AI(int playerNumber, Game* game)
+    : Player(playerNumber), game(game), reactionTime(REACTION_TIME)
 {}
 
-void AI::handleEvent(SDL_Event& event) {
-    // do random
-    int num = rand() % 100;
-    if (num < 25) {
-        rotateAndBoost();
-    } else if (num < 50) {
-        shoot();
-    } else if (num < 75) {
-        switchActiveSpaceship();
-    } else {
-        splitCurrentSpaceship();
-    }
-}
+// AI need not handle events
+void AI::handleEvent(SDL_Event& event) {}
 
 void AI::update(float deltaTime) {
-    // Check if the left key is being held down
-    if (rand() % 100 < 50) {
-        spaceships[activeSpaceship]->rotate(-gameSettings->rotationSpeed * deltaTime);
+    if (spaceships.empty()) {
+        return;
+    }
+    rotate(deltaTime);
+    
+    std::shared_ptr<Agent> player = (game->getPlayer1()->pNumber() == pNumber()) ? game->getPlayer2() : game->getPlayer1();
+    auto enemies = player->getSpaceships();
+    auto spaceship = spaceships[activeSpaceship];
+    for (auto& enemy : enemies) {
+        Vector2 direction = enemy->pos - spaceship->pos;
+        float angle = spaceship->velocity.angleBetween(direction); // in degrees
+        if (-5 <= angle && angle <= 5) {
+            shoot();
+        }
+    }
+    
+    reactionTime -= deltaTime;
+    if (reactionTime <= 0) {
+        int randomAction = rand() % 100;
+        reactionTime = REACTION_TIME;
+        if (randomAction < 33) {
+            rotateAndBoost();
+        } else if (randomAction < 66) {
+            splitCurrentSpaceship();
+        } else {
+            switchActiveSpaceship();
+        }
+        
     }
     Player::update(deltaTime);
 }
