@@ -1,13 +1,14 @@
 #include "spaceship.h"
 #include <iostream>
+#include "utils.h"
 
 int Spaceship::idCounter = 0;
 
-Spaceship::Spaceship(int playerNumber, std::shared_ptr<GameSettings> settings, float startX, float startY)
+Spaceship::Spaceship(int playerNumber, float startX, float startY)
     : id(idCounter++), 
     playerNumber(playerNumber), 
     value(1), 
-    gameSettings(settings), 
+    gameSettings(GameSettings::get()), 
     pos(Vector2(startX, startY)), 
     velocity(Vector2(1.0, 0.0)), 
     speed(0.0), 
@@ -15,23 +16,24 @@ Spaceship::Spaceship(int playerNumber, std::shared_ptr<GameSettings> settings, f
     active(false),
     readyForSameSideCollision(true),
     readyForOppositeSideCollision(true),
-    weapon(Weapon(WeaponSettings{
-        .type = ProjectileType::BULLET,
-        .cooldown = 1.0f,
-        .cooldownTimer = 0.0f,
-        .maxBulletAmmo = 2,
-        .bulletAmmo = 2,
-        .bulletSpeed = settings->bulletSpeed,
-        .bulletRadius = settings->bulletRadius,
-        .bulletLifeTime = settings->bulletLifeTime,
-        .laserBeamLifeTime = settings->laserBeamLifeTime,
-        .laserBeamWidth = settings->laserBeamWidth,
-        .mineActivationDuration = settings->mineActivationDuration,
-        .mineActiveRadius = settings->mineActiveRadius,
-        .mineExplosionRadius = settings->mineExplosionRadius,
-        .mineExplosionDuration = settings->mineExplosionDuration,
-        .mineSize = settings->mineSize
-    }))
+    // weapon(Weapon(WeaponSettings{
+    //     .type = ProjectileType::BULLET,
+    //     .cooldown = 1.0f,
+    //     .cooldownTimer = 0.0f,
+    //     .maxBulletAmmo = 2,
+    //     .bulletAmmo = 2,
+    //     .bulletSpeed = settings->bulletSpeed,
+    //     .bulletRadius = settings->bulletRadius,
+    //     .bulletLifeTime = settings->bulletLifeTime,
+    //     .laserBeamLifeTime = settings->laserBeamLifeTime,
+    //     .laserBeamWidth = settings->laserBeamWidth,
+    //     .mineActivationDuration = settings->mineActivationDuration,
+    //     .mineActiveRadius = settings->mineActiveRadius,
+    //     .mineExplosionRadius = settings->mineExplosionRadius,
+    //     .mineExplosionDuration = settings->mineExplosionDuration,
+    //     .mineSize = settings->mineSize
+    // }))
+    weapon(Weapon(ProjectileType::BULLET, 1.0f, 0.0f, 2, 2))
 {
 }
 
@@ -104,8 +106,9 @@ void Spaceship::update(float deltaTime) {
     weapon.update(deltaTime);
 }
 
-void Spaceship::render(SDL_Renderer* renderer, std::unordered_map<std::string, SDL_Texture*> textures) const {
-    SDL_Texture* texture = textures.at(std::to_string(value));
+void Spaceship::render(SDL_Renderer* renderer) const {
+    // SDL_Texture* texture = textures.at(std::to_string(value));
+    SDL_Texture* texture = renderTextAsTexture(renderer, gameSettings->sdlSettings->font, std::to_string(value).c_str(), SDL_Color{255, 255, 255});
 
     int size = gameSettings->spaceshipSize;
     SDL_Rect rect = {static_cast<int>(minX()), static_cast<int>(minY()), size, size};

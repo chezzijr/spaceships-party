@@ -2,6 +2,8 @@
 #include <algorithm>
 #include "utils.h"
 #include <iostream>
+#include "SDL2/SDL_mixer.h"
+
 Bullet::Bullet(Vector2 pos, float angle, float speed, float maxLifeTime, float radius)
     : pos(pos), angle(angle), speed(speed), maxLifeTime(maxLifeTime), lifeTime(0), radius(radius), eol(false)
 {}
@@ -130,13 +132,15 @@ Mine::Mine(Vector2 pos, float size, float activationDuration, float activeRadius
 void Mine::update(float delta) {
     // std::cout << "Delta time: "  << delta << std::endl;
     if (activated && activationDuration > 0) {
-        // std::cout << "Activation duration: " << activationDuration << std::endl;
-        activationDuration -= delta;
+        activationDuration = std::max(0.0f, activationDuration - delta);
     } else if (activationDuration <= 0.0f && explosionDuration > 0) {
         // Explode
+        if (!exploding) {
+            Mix_PlayMusic(GameSettings::get()->sdlSettings->mineSound, 1);
+        }
         exploding = true;
         // std::cout << "Explosion duration: " << explosionDuration << std::endl;
-        explosionDuration -= delta;
+        explosionDuration = std::max(0.0f, explosionDuration - delta);
     } else if (explosionDuration <= 0) {
         eol = true;
     }
@@ -177,7 +181,11 @@ void Mine::render(SDL_Renderer* renderer) const {
         Circle mineCollisionShape = {pos, size};
         drawCircle(renderer, mineCollisionShape);
     } else {
-        Circle explosionCollisionShape = {pos, explosionRadius};
+        float radius = explosionRadius * (1 - std::pow(explosionDuration / settings->mineExplosionDuration, 4));
+        Circle explosionCollisionShape = {pos, radius};
+        Circle shockWaveCollisionShape = {pos, explosionRadius};
+        SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
+        drawCircle(renderer, shockWaveCollisionShape);
         SDL_SetRenderDrawColor(renderer, 255, 165, 0, 255);
         drawCircle(renderer, explosionCollisionShape);
     }

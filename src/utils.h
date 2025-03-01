@@ -2,9 +2,12 @@
 #define UTILS_H
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include "math.h"
 
 void drawCircle(SDL_Renderer* renderer, const Circle& circle);
+void drawCircleRing(SDL_Renderer* renderer, const Circle& circle, int width);
+SDL_Texture* renderTextAsTexture(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Color color);
 
 enum class BorderSide {
     LEFT = 1,

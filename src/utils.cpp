@@ -10,6 +10,18 @@ void drawCircle(SDL_Renderer* renderer, const Circle& circle) {
     }
 }
 
+void drawCircleRing(SDL_Renderer* renderer, const Circle& circle, int width) {
+    int radius = (int)circle.radius;
+    int centerX = (int)circle.center.x;
+    int centerY = (int)circle.center.y;
+    for (int y = -radius; y <= radius; y++) {
+        int dx = (int)sqrt(radius * radius - y * y); // Calculate horizontal distance
+        for (int i = -width / 2; i <= width / 2; i++) {
+            SDL_RenderDrawPoint(renderer, centerX - dx + i, centerY + y);
+        }
+    }
+}
+
 // 1: left, 2: right, 3: top, 4: bottom
 RayIntersection getRayIntersectionBorder(const Vector2& pos, float angle, int SCREEN_WIDTH, int SCREEN_HEIGHT) {
     float dx = std::cos(angle);
@@ -42,4 +54,19 @@ RayIntersection getRayIntersectionBorder(const Vector2& pos, float angle, int SC
     Vector2 intersectionPoint = { pos.x + tMin * dx, pos.y + tMin * dy };
 
     return { side, intersectionPoint };
+}
+
+SDL_Texture* renderTextAsTexture(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Color color) {
+    SDL_Surface* surface = TTF_RenderText_Solid(font, text, color);
+    if (surface == nullptr) {
+        return nullptr;
+    }
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+    if (texture == nullptr) {
+        return nullptr;
+    }
+
+    return texture;
 }

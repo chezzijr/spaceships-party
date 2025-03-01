@@ -66,6 +66,10 @@ float Vector2::distance(const Vector2& other) const {
     return (*this - other).magnitude();
 }
 
+float Vector2::angleBetween(const Vector2& other) const {
+    return rad2deg(std::acos(dot(other) / (magnitude() * other.magnitude())));
+}
+
 Circle::Circle(Vector2 center, float radius) : center(center), radius(radius) {}
 bool Circle::contains(Vector2 point) const {
     return center.distance(point) <= radius;

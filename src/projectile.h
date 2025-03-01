@@ -7,12 +7,6 @@
 #include "math.h"
 #include "settings.h"
 
-enum class ProjectileType {
-    BULLET,
-    LASER_BEAM,
-    MINE
-};
-
 class Projectile {
 public:
     virtual void update(float delta) = 0;

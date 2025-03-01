@@ -1,7 +1,8 @@
 #include "weapon.h"
+#include "SDL2/SDL_mixer.h"
 
-Weapon::Weapon(WeaponSettings settings)
-    : WeaponSettings(settings)
+Weapon::Weapon(ProjectileType type, float cooldown, float cooldownTimer, int maxBulletAmmo, int bulletAmmo)
+    : type(type), cooldown(cooldown), cooldownTimer(cooldownTimer), maxBulletAmmo(maxBulletAmmo), bulletAmmo(bulletAmmo)
 {}
 
 std::shared_ptr<Projectile> Weapon::fire(Vector2 pos, float angle, std::shared_ptr<GameSettings> gameSettings) {
@@ -14,6 +15,7 @@ std::shared_ptr<Projectile> Weapon::fire(Vector2 pos, float angle, std::shared_p
             return std::make_shared<Bullet>(pos, angle, gameSettings->bulletSpeed, gameSettings->bulletLifeTime, gameSettings->bulletRadius);
         case ProjectileType::LASER_BEAM:
             type = ProjectileType::BULLET;
+            Mix_PlayMusic(gameSettings->sdlSettings->laserSound, 1);
             return std::make_shared<LaserBeam>(pos, angle, gameSettings->laserBeamLifeTime, gameSettings->laserBeamWidth);
         case ProjectileType::MINE:
             type = ProjectileType::BULLET;
