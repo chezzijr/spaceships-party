@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include "utils.h"
+#include "ui.h"
 
 
 Game::Game() 
@@ -64,26 +65,12 @@ bool Game::init() {
 
     SDL_Color textColor = {255, 255, 255};
     SDL_Color selectedTextColor = {0, 255, 0};
-    for (int i = 1; i <= 9; i++) {
-        const char* text = std::to_string(i).c_str();
-        SDL_Surface* surface = TTF_RenderText_Solid(sdlSettings->font, text, textColor);
-        if (!surface) {
-            std::cerr << "Failed to render text: " << TTF_GetError() << std::endl;
-            return false;
-        }
-        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-        SDL_FreeSurface(surface);
-        if (!texture) {
-            std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
-            return false;
-        }
-        textures[std::to_string(i)] = texture;
-    }
 
     // powerup textures
     sdlSettings->laserPowerup = renderTextAsTexture(renderer, sdlSettings->font, "/", SDL_Color{0, 0, 255});
     sdlSettings->minePowerup = renderTextAsTexture(renderer, sdlSettings->font, "*", SDL_Color{255, 0, 0});
     if (sdlSettings->laserPowerup == nullptr || sdlSettings->minePowerup == nullptr) {
+        std::cerr << "Failed to create powerup texture: " << SDL_GetError() << std::endl;
         return false;
     }
 
@@ -91,6 +78,20 @@ bool Game::init() {
     sdlSettings->player1WinText = renderTextAsTexture(renderer, sdlSettings->font, "Player 1 Win", textColor);
     sdlSettings->player2WinText = renderTextAsTexture(renderer, sdlSettings->font, "Player 2 Win", textColor);
     if (sdlSettings->stalemateText == nullptr || sdlSettings->player1WinText == nullptr || sdlSettings->player2WinText == nullptr) {
+        std::cerr << "Failed to create win text texture: " << SDL_GetError() << std::endl;
+        return false;
+    }
+
+    // init sound effects'
+    sdlSettings->laserSound = Mix_LoadMUS(settings->laserBeamSound.c_str());
+    if (sdlSettings->laserSound == nullptr) {
+        std::cerr << "Failed to load laser sound: " << Mix_GetError() << std::endl;
+        return false;
+    }
+
+    sdlSettings->mineSound = Mix_LoadMUS(settings->mineSound.c_str());
+    if (sdlSettings->mineSound == nullptr) {
+        std::cerr << "Failed to load mine sound: " << Mix_GetError() << std::endl;
         return false;
     }
 
@@ -98,17 +99,12 @@ bool Game::init() {
     
     // Load players
     player1 = std::make_shared<Player>(1);
-    player2 = std::make_shared<AI>(2, this);
+    // player2 = std::make_shared<AI>(2, this);
 
     return true;
 }
 
 Game::~Game() {
-    for (auto& texture : textures) {
-        if (texture.second != nullptr)
-            SDL_DestroyTexture(texture.second);
-    }
-
     if (renderer != nullptr)
         SDL_DestroyRenderer(renderer);
     if (window != nullptr)
@@ -127,6 +123,53 @@ std::shared_ptr<Agent> Game::getPlayer2() {
 }
 
 void Game::run() {
+    UI ui;
+    int w = settings->w;
+    int h = settings->h;
+    int btnW = 300;
+    int btnH = 100;
+    // middle vertically, flex horizontally
+    Button btnHumanPlayer(
+        Vector2(w / 4 - btnW / 2, h / 2 - btnH / 2), 
+        Vector2(btnW, btnH), 
+        SDL_Color{255, 0, 0},
+        renderTextAsTexture(renderer, settings->sdlSettings->font, "Human Player", SDL_Color{255, 255, 255}), 
+        [&]() {
+        player2 = std::make_shared<Player>(2);
+        ui.stop();
+    });
+
+    Button btnAIPlayer(
+        Vector2(3 * w / 4 - btnW / 2, h / 2 - btnH / 2), 
+        Vector2(btnW, btnH), 
+        SDL_Color{0, 255, 0}, 
+        renderTextAsTexture(renderer, settings->sdlSettings->font, "AI Player", SDL_Color{255, 255, 255}), 
+        [&]() {
+        player2 = std::make_shared<AI>(2, this);
+        ui.stop();
+    });
+
+    ui.addComponent(std::make_shared<Button>(btnHumanPlayer));
+    ui.addComponent(std::make_shared<Button>(btnAIPlayer));
+
+    while (ui.isRunning()) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                ui.stop();
+                return;
+            }
+            ui.handleEvent(&event);
+        }
+
+        SDL_RenderClear(renderer);
+        // background
+        SDL_RenderCopy(renderer, settings->sdlSettings->background, nullptr, nullptr);
+        ui.render(renderer);
+        SDL_RenderPresent(renderer);
+        SDL_Delay(1000 / settings->fps);
+    }
+
     bool running = true;
     while (running) {
         float deltaTime = clk.delta();
@@ -148,8 +191,10 @@ void Game::run() {
         handlePowerupCollision();
 
         // Update game state
-        player1->update(deltaTime);
-        player2->update(deltaTime);
+        if (player1->hasSpaceship() && player2->hasSpaceship()) {
+            player1->update(deltaTime);
+            player2->update(deltaTime);
+        }
 
         // Spawn powerups
         powerupSpawnTimer += deltaTime;

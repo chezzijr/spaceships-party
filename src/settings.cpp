@@ -22,6 +22,7 @@ std::shared_ptr<GameSettings> GameSettings::defaultInstance() {
         .fps = 60,
         .backgroundImage = "assets/bg.jpg",
         .laserBeamSound = "assets/laser.mp3",
+        .mineSound = "assets/mine.mp3",
         .playerSettings = {
             {
                 .leftBtn = SDL_SCANCODE_LEFT,
@@ -76,6 +77,7 @@ void GameSettings::init(const char* filename) {
         .fps = j.value("fps", defaultSettings->fps),
         .backgroundImage = j.value("backgroundImage", defaultSettings->backgroundImage),
         .laserBeamSound = j.value("laserBeamSound", defaultSettings->laserBeamSound),
+        .mineSound = j.value("mineSound", defaultSettings->mineSound),
         .playerSettings = {
             {
                 .leftBtn = j.value("player1.leftBtn", defaultSettings->playerSettings[0].leftBtn),
@@ -129,12 +131,12 @@ SDL_Settings::~SDL_Settings() {
         SDL_DestroyTexture(player2WinText);
     }
     if (bulletSound != nullptr) {
-        Mix_FreeChunk(bulletSound);
+        Mix_FreeMusic(bulletSound);
     }
     if (laserSound != nullptr) {
-        Mix_FreeChunk(laserSound);
+        Mix_FreeMusic(laserSound);
     }
     if (mineSound != nullptr) {
-        Mix_FreeChunk(mineSound);
+        Mix_FreeMusic(mineSound);
     }
 }

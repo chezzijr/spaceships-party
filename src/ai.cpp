@@ -13,9 +13,6 @@ AI::AI(int playerNumber, Game* game)
 void AI::handleEvent(SDL_Event& event) {}
 
 void AI::update(float deltaTime) {
-    if (spaceships.empty()) {
-        return;
-    }
     rotate(deltaTime);
     
     std::shared_ptr<Agent> player = (game->getPlayer1()->pNumber() == pNumber()) ? game->getPlayer2() : game->getPlayer1();

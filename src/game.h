@@ -17,7 +17,6 @@
 
 class Game {
 private:
-    std::unordered_map<std::string, SDL_Texture*> textures;
     SDL_Window* window;
     SDL_Renderer* renderer;
     Clock clk;

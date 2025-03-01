@@ -2,6 +2,8 @@
 #include <algorithm>
 #include "utils.h"
 #include <iostream>
+#include "SDL2/SDL_mixer.h"
+
 Bullet::Bullet(Vector2 pos, float angle, float speed, float maxLifeTime, float radius)
     : pos(pos), angle(angle), speed(speed), maxLifeTime(maxLifeTime), lifeTime(0), radius(radius), eol(false)
 {}
@@ -133,6 +135,9 @@ void Mine::update(float delta) {
         activationDuration = std::max(0.0f, activationDuration - delta);
     } else if (activationDuration <= 0.0f && explosionDuration > 0) {
         // Explode
+        if (!exploding) {
+            Mix_PlayMusic(GameSettings::get()->sdlSettings->mineSound, 1);
+        }
         exploding = true;
         // std::cout << "Explosion duration: " << explosionDuration << std::endl;
         explosionDuration = std::max(0.0f, explosionDuration - delta);
