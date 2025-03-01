@@ -30,4 +30,6 @@ run:
 # assets are in assets/ folder
 zip:
 	if [ ! -f $(OUTPUT).exe ]; then echo "Building binary" && make all; fi
-	ldd $(OUTPUT) | grep /mingw64 | awk '{print $$3}' | zip $(OBJ_DIR)/$(OBJ_NAME).zip -j -@ $(OUTPUT).exe && zip $(OBJ_DIR)/$(OBJ_NAME).zip -r assets/
+	ldd $(OUTPUT) | grep /mingw64 | awk '{print $$3}' | zip $(OBJ_DIR)/$(OBJ_NAME).zip -j -@ $(OUTPUT).exe 
+	zip $(OBJ_DIR)/$(OBJ_NAME).zip -r assets/
+	zip $(OBJ_DIR)/$(OBJ_NAME).zip -j config.json
