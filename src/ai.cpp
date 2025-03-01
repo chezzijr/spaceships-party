@@ -21,7 +21,7 @@ void AI::update(float deltaTime) {
     for (auto& enemy : enemies) {
         Vector2 direction = enemy->pos - spaceship->pos;
         float angle = spaceship->velocity.angleBetween(direction); // in degrees
-        if (-5 <= angle && angle <= 5) {
+        if (-10 <= angle && angle <= 10) {
             shoot();
         }
     }

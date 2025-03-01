@@ -108,19 +108,15 @@ void Spaceship::update(float deltaTime) {
 
 void Spaceship::render(SDL_Renderer* renderer) const {
     // SDL_Texture* texture = textures.at(std::to_string(value));
-    SDL_Texture* texture = renderTextAsTexture(renderer, gameSettings->sdlSettings->font, std::to_string(value).c_str(), SDL_Color{255, 255, 255});
+    SDL_Color color = playerNumber == 1 ? SDL_Color{255, 0, 0} : SDL_Color{0, 255, 0};
+    if (active) {
+        color.b = 255;
+    }
+    SDL_Texture* texture = renderTextAsTexture(renderer, gameSettings->sdlSettings->font, std::to_string(value).c_str(), color);
 
     int size = gameSettings->spaceshipSize;
     SDL_Rect rect = {static_cast<int>(minX()), static_cast<int>(minY()), size, size};
     SDL_RenderCopyEx(renderer, texture, NULL, &rect, angle + 90.0f, NULL, SDL_FLIP_NONE);
-
-    // Optionally render spaceship direction
-    if (active) {
-        float tipX = pos.x + size / 2 * std::cos(deg2rad(angle));
-        float tipY = pos.y + size / 2 * std::sin(deg2rad(angle));
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        SDL_RenderDrawLine(renderer, pos.x, pos.y, tipX, tipY);
-    }
 }
 
 void Spaceship::applyBoost() {
@@ -134,5 +130,9 @@ std::shared_ptr<Projectile> Spaceship::fire() {
 }
 
 void Spaceship::pickUpProjectile(ProjectileType type) {
-    weapon.pickUpProjectile(type);
+    if (type == ProjectileType::PLUS) {
+        value++;
+    } else {
+        weapon.pickUpProjectile(type);
+    }
 }

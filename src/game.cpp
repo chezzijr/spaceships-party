@@ -69,7 +69,8 @@ bool Game::init() {
     // powerup textures
     sdlSettings->laserPowerup = renderTextAsTexture(renderer, sdlSettings->font, "/", SDL_Color{0, 0, 255});
     sdlSettings->minePowerup = renderTextAsTexture(renderer, sdlSettings->font, "*", SDL_Color{255, 0, 0});
-    if (sdlSettings->laserPowerup == nullptr || sdlSettings->minePowerup == nullptr) {
+    sdlSettings->plusPowerup = renderTextAsTexture(renderer, sdlSettings->font, "+", SDL_Color{0, 255, 0});
+    if (sdlSettings->laserPowerup == nullptr || sdlSettings->minePowerup == nullptr || sdlSettings->plusPowerup == nullptr) {
         std::cerr << "Failed to create powerup texture: " << SDL_GetError() << std::endl;
         return false;
     }
@@ -99,7 +100,6 @@ bool Game::init() {
     
     // Load players
     player1 = std::make_shared<Player>(1);
-    // player2 = std::make_shared<AI>(2, this);
 
     return true;
 }
@@ -204,7 +204,10 @@ void Game::run() {
             float y = rand() % settings->h;
 
             // random laser beam or mine
-            ProjectileType type = rand() % 2 == 0 ? ProjectileType::LASER_BEAM : ProjectileType::MINE;
+            // ProjectileType type = rand() % 2 == 0 ? ProjectileType::LASER_BEAM : ProjectileType::MINE;
+            int r = rand() % 3;
+            ProjectileType pw[]{ProjectileType::LASER_BEAM, ProjectileType::MINE, ProjectileType::PLUS};
+            ProjectileType type = pw[r];
             //! TODO: update mine before enabling it
             // ProjectileType type = ProjectileType::LASER_BEAM;
             Powerup powerup(Vector2(x, y), 10.0f, type);

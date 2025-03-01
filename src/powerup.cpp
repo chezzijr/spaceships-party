@@ -28,5 +28,8 @@ void Powerup::render(SDL_Renderer* renderer) const {
     } else if (type == ProjectileType::MINE) {
         SDL_Rect dstRect = {(int)pos.x - radius, (int)pos.y - radius, (int)radius * 2, (int)radius * 2};
         SDL_RenderCopy(renderer, gameSettings->sdlSettings->minePowerup, nullptr, &dstRect);
+    } else if (type == ProjectileType::PLUS) {
+        SDL_Rect dstRect = {(int)pos.x - radius, (int)pos.y - radius, (int)radius * 2, (int)radius * 2};
+        SDL_RenderCopy(renderer, gameSettings->sdlSettings->plusPowerup, nullptr, &dstRect);
     }
 }

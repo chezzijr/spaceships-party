@@ -15,7 +15,8 @@ struct PlayerSettings {
 enum class ProjectileType {
     BULLET,
     LASER_BEAM,
-    MINE
+    MINE,
+    PLUS
 };
 
 struct WeaponSettings {
@@ -36,6 +37,7 @@ struct SDL_Settings {
     SDL_Texture* laserPowerup;
     Mix_Music* mineSound;
     SDL_Texture* minePowerup;
+    SDL_Texture* plusPowerup;
 
     ~SDL_Settings();
 };
