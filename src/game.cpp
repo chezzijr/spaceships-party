@@ -96,6 +96,12 @@ bool Game::init() {
         return false;
     }
 
+    sdlSettings->bulletSound = Mix_LoadMUS(settings->bulletSound.c_str());
+    if (sdlSettings->bulletSound == nullptr) {
+        std::cerr << "Failed to load bullet sound: " << Mix_GetError() << std::endl;
+        return false;
+    }
+
     settings->sdlSettings = sdlSettings;
     
     // Load players

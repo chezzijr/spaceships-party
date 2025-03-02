@@ -12,6 +12,7 @@ std::shared_ptr<Projectile> Weapon::fire(Vector2 pos, float angle, std::shared_p
                 return nullptr;
             }
             bulletAmmo--;
+            Mix_PlayMusic(gameSettings->sdlSettings->bulletSound, 1);
             return std::make_shared<Bullet>(pos, angle, gameSettings->bulletSpeed, gameSettings->bulletLifeTime, gameSettings->bulletRadius);
         case ProjectileType::LASER_BEAM:
             type = ProjectileType::BULLET;

@@ -5,6 +5,8 @@
     "fps": 60,
     "backgroundImage": "assets/bg.jpg",
     "laserBeamSound": "assets/laser.mp3",
+    "mineSound": "assets/mine.mp3",
+    "bulletSound": "assets/bullet.mp3",
     "playerSettings": [
         {
             "leftBtn": 80,

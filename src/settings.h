@@ -34,8 +34,8 @@ struct SDL_Settings {
     TTF_Font* font;
     Mix_Music* bulletSound;
     Mix_Music* laserSound;
-    SDL_Texture* laserPowerup;
     Mix_Music* mineSound;
+    SDL_Texture* laserPowerup;
     SDL_Texture* minePowerup;
     SDL_Texture* plusPowerup;
 
@@ -52,8 +52,7 @@ struct GameSettings {
     int x, y, w, h;
     int fps;
     std::string backgroundImage;
-    std::string laserBeamSound;
-    std::string mineSound;
+    std::string laserBeamSound, mineSound, bulletSound;
 
     // PlayerSettings player1;
     // PlayerSettings player2;

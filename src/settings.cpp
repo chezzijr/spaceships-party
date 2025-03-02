@@ -23,6 +23,7 @@ std::shared_ptr<GameSettings> GameSettings::defaultInstance() {
         .backgroundImage = "assets/bg.jpg",
         .laserBeamSound = "assets/laser.mp3",
         .mineSound = "assets/mine.mp3",
+        .bulletSound = "assets/bullet.mp3",
         .playerSettings = {
             {
                 .leftBtn = SDL_SCANCODE_LEFT,
@@ -78,6 +79,7 @@ void GameSettings::init(const char* filename) {
         .backgroundImage = j.value("backgroundImage", defaultSettings->backgroundImage),
         .laserBeamSound = j.value("laserBeamSound", defaultSettings->laserBeamSound),
         .mineSound = j.value("mineSound", defaultSettings->mineSound),
+        .bulletSound = j.value("bulletSound", defaultSettings->bulletSound),
         .playerSettings = {
             {
                 .leftBtn = j.value("player1.leftBtn", defaultSettings->playerSettings[0].leftBtn),
