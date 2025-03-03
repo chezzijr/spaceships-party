@@ -16,6 +16,7 @@
 #include "powerup.h"
 
 class Game {
+friend class AI;
 private:
     SDL_Window* window;
     SDL_Renderer* renderer;
@@ -30,11 +31,18 @@ private:
     void handleMergeCollision();
     void handleProjectileCollision();
     void handlePowerupCollision();
+    std::shared_ptr<Agent> getPlayer1();
+    std::shared_ptr<Agent> getPlayer2();
+    std::vector<std::shared_ptr<Spaceship>> getSpaceships();
+    std::vector<std::shared_ptr<Projectile>> getProjectiles();
+    void reset();
+    void playerMenu();
+    void tutorialMenu();
+    int gameLoop();
+    bool gameOverMenu(int winner);
 public:
     Game();
     ~Game();
-    std::shared_ptr<Agent> getPlayer1();
-    std::shared_ptr<Agent> getPlayer2();
     bool init();
     void run();
 };

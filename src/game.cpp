@@ -103,9 +103,7 @@ bool Game::init() {
     }
 
     settings->sdlSettings = sdlSettings;
-    
-    // Load players
-    player1 = std::make_shared<Player>(1);
+
 
     return true;
 }
@@ -120,6 +118,12 @@ Game::~Game() {
     SDL_Quit();
 }
 
+void Game::reset() {
+    powerups.clear();
+    powerupSpawnTimer = 0.0f;
+    clk.reset();
+}
+
 std::shared_ptr<Agent> Game::getPlayer1() {
     return player1;
 }
@@ -128,8 +132,9 @@ std::shared_ptr<Agent> Game::getPlayer2() {
     return player2;
 }
 
-void Game::run() {
+void Game::playerMenu() {
     UI ui;
+    // UI for player selection
     int w = settings->w;
     int h = settings->h;
     int btnW = 300;
@@ -141,6 +146,7 @@ void Game::run() {
         SDL_Color{255, 0, 0},
         renderTextAsTexture(renderer, settings->sdlSettings->font, "Human Player", SDL_Color{255, 255, 255}), 
         [&]() {
+        player1 = std::make_shared<Player>(1);
         player2 = std::make_shared<Player>(2);
         ui.stop();
     });
@@ -151,6 +157,7 @@ void Game::run() {
         SDL_Color{0, 255, 0}, 
         renderTextAsTexture(renderer, settings->sdlSettings->font, "AI Player", SDL_Color{255, 255, 255}), 
         [&]() {
+        player1 = std::make_shared<Player>(1);
         player2 = std::make_shared<AI>(2, this);
         ui.stop();
     });
@@ -162,7 +169,62 @@ void Game::run() {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
-                ui.stop();
+                exit(0);
+            }
+            ui.handleEvent(&event);
+        }
+
+        SDL_RenderClear(renderer);
+        // background
+        SDL_RenderCopy(renderer, settings->sdlSettings->background, nullptr, nullptr);
+        ui.render(renderer);
+        SDL_RenderPresent(renderer);
+        SDL_Delay(1000 / settings->fps);
+    }
+}
+
+void Game::tutorialMenu() {
+    int w = settings->w;
+    int h = settings->h;
+    int margin = 20;
+    UI ui;
+    TTF_Font* font = TTF_OpenFont("assets/font.ttf", 16);
+    TextArea player1(
+        Vector2(w / 8, h / 4), 
+        Vector2(w / 2, h),
+        margin,
+        font, 
+        SDL_Color{255, 255, 255}, 
+        "    Player 1:\nLeft to rotate\nDouble left to boost\nUp to fire\nDown to split\nRight to switch spaceship"
+    );
+
+    TextArea player2(
+        Vector2(w * 5 / 8, h / 4), 
+        Vector2(w / 2, h), 
+        margin,
+        font, 
+        SDL_Color{255, 255, 255}, 
+        "    Player 2:\nA to rotate\nDouble A to boost\nW to fire\nS to split\nD to switch spaceship"
+    );
+
+    Button btnStart(
+        Vector2(w / 2 - 150, h - 100), 
+        Vector2(300, 100), 
+        SDL_Color{0, 255, 0}, 
+        renderTextAsTexture(renderer, settings->sdlSettings->font, "Start", SDL_Color{255, 255, 255}), 
+        [&]() {
+        ui.stop();
+    });
+
+    ui.addComponent(std::make_shared<TextArea>(player1));
+    ui.addComponent(std::make_shared<TextArea>(player2));
+    ui.addComponent(std::make_shared<Button>(btnStart));
+    
+    while (ui.isRunning()) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                exit(0);
                 return;
             }
             ui.handleEvent(&event);
@@ -175,7 +237,9 @@ void Game::run() {
         SDL_RenderPresent(renderer);
         SDL_Delay(1000 / settings->fps);
     }
+}
 
+int Game::gameLoop() {
     bool running = true;
     while (running) {
         float deltaTime = clk.delta();
@@ -183,7 +247,8 @@ void Game::run() {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
-                running = false;
+                exit(0);
+                return false;
             }
             if (player1->hasSpaceship() && player2->hasSpaceship()) {
                 player1->handleEvent(event);
@@ -231,19 +296,88 @@ void Game::run() {
         }
 
         if (!player1->hasSpaceship() && !player2->hasSpaceship()) {
-            SDL_Rect dstRect = {settings->w / 2 - 100, settings->h / 2 - 50, 200, 100};
-            SDL_RenderCopy(renderer, settings->sdlSettings->stalemateText, nullptr, &dstRect);
+            // SDL_Rect dstRect = {settings->w / 2 - 100, settings->h / 2 - 50, 200, 100};
+            // SDL_RenderCopy(renderer, settings->sdlSettings->stalemateText, nullptr, &dstRect);
+            return 0;
         } else if (!player1->hasSpaceship()) {
-            SDL_Rect dstRect = {settings->w / 2 - 100, settings->h / 2 - 50, 200, 100};
-            SDL_RenderCopy(renderer, settings->sdlSettings->player2WinText, nullptr, &dstRect);
+            // SDL_Rect dstRect = {settings->w / 2 - 100, settings->h / 2 - 50, 200, 100};
+            // SDL_RenderCopy(renderer, settings->sdlSettings->player2WinText, nullptr, &dstRect);
+            return 2;
         } else if (!player2->hasSpaceship()) {
-            SDL_Rect dstRect = {settings->w / 2 - 100, settings->h / 2 - 50, 200, 100};
-            SDL_RenderCopy(renderer, settings->sdlSettings->player1WinText, nullptr, &dstRect);
+            // SDL_Rect dstRect = {settings->w / 2 - 100, settings->h / 2 - 50, 200, 100};
+            // SDL_RenderCopy(renderer, settings->sdlSettings->player1WinText, nullptr, &dstRect);
+            return 1;
         }
 
         SDL_RenderPresent(renderer);
 
         SDL_Delay(1000 / settings->fps);
+    }
+}
+
+bool Game::gameOverMenu(int winner) {
+    int w = settings->w;
+    int h = settings->h;
+    bool cont = true;
+    UI ui;
+    std::string status = winner == 0 ? "Stalemate" : winner == 1 ? "Player 1 Win" : "Player 2 Win";
+    TextArea text(
+        Vector2(w / 2 - 100, h / 4), 
+        Vector2(200, 100), 
+        20, 
+        settings->sdlSettings->font, 
+        SDL_Color{255, 255, 255}, 
+        status
+    );
+    Button btnRestart(
+        Vector2(w / 2 - 150, h / 2 - 50), 
+        Vector2(300, 100), 
+        SDL_Color{0, 255, 0}, 
+        renderTextAsTexture(renderer, settings->sdlSettings->font, "Restart", SDL_Color{255, 255, 255}), 
+        [&]() {
+        ui.stop();
+    });
+    Button btnQuit(
+        Vector2(w / 2 - 150, h / 2 + 50), 
+        Vector2(300, 100), 
+        SDL_Color{255, 0, 0}, 
+        renderTextAsTexture(renderer, settings->sdlSettings->font, "Quit", SDL_Color{255, 255, 255}), 
+        [&]() {
+        cont = false;
+        ui.stop();
+    });
+
+    ui.addComponent(std::make_shared<TextArea>(text));
+    ui.addComponent(std::make_shared<Button>(btnRestart));
+    ui.addComponent(std::make_shared<Button>(btnQuit));
+
+    while (ui.isRunning()) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                exit(0);
+                return false;
+            }
+            ui.handleEvent(&event);
+        }
+
+        // background
+        ui.render(renderer);
+        SDL_RenderPresent(renderer);
+        SDL_Delay(1000 / settings->fps);
+    }
+
+    return cont;
+}
+
+void Game::run() {
+    bool cont = true;
+    while (cont) {
+        playerMenu();
+        tutorialMenu();
+        int winner = gameLoop();
+        cont = gameOverMenu(winner);
+        reset();
     }
 }
 
@@ -428,4 +562,22 @@ void Game::handlePowerupCollision() {
     powerups.erase(std::remove_if(powerups.begin(), powerups.end(), [](const Powerup& powerup) {
         return powerup.isAcquired();
     }), powerups.end());
+}
+
+std::vector<std::shared_ptr<Spaceship>> Game::getSpaceships() {
+    std::vector<std::shared_ptr<Spaceship>> spaceships;
+    auto p1s = player1->getSpaceships();
+    auto p2s = player2->getSpaceships();
+    spaceships.insert(spaceships.end(), p1s.begin(), p1s.end());
+    spaceships.insert(spaceships.end(), p2s.begin(), p2s.end());
+    return spaceships;
+}
+
+std::vector<std::shared_ptr<Projectile>> Game::getProjectiles() {
+    std::vector<std::shared_ptr<Projectile>> projectiles;
+    auto p1p = player1->getProjectiles();
+    auto p2p = player2->getProjectiles();
+    projectiles.insert(projectiles.end(), p1p.begin(), p1p.end());
+    projectiles.insert(projectiles.end(), p2p.begin(), p2p.end());
+    return projectiles;
 }

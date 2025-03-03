@@ -19,6 +19,11 @@ enum class ProjectileType {
     PLUS
 };
 
+enum class ForceType {
+    Attraction,
+    Repulsion
+};
+
 struct WeaponSettings {
     float bulletSpeed, bulletRadius, bulletLifeTime;
     float laserBeamLifeTime, laserBeamWidth;

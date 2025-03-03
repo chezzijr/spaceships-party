@@ -9,7 +9,7 @@ private:
     uint64_t now;
 public:
     Clock();
-
+    void reset();
     float delta();
 };
 #endif

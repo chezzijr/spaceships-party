@@ -9,3 +9,9 @@ float Clock::delta()
     float d = float(now - last) / static_cast<double>(SDL_GetPerformanceFrequency());
     return d;
 }
+
+void Clock::reset()
+{
+    last = 0;
+    now = SDL_GetPerformanceCounter();
+}
